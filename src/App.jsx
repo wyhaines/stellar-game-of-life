@@ -1,5 +1,3 @@
-// UI for Stellar/Soroban based Conway's Game of Life
-//
 import React, { useEffect, useState, useCallback, useRef } from "react"
 import {
   rpc as StellarRpc,
@@ -19,7 +17,6 @@ import {
   ForwardIcon,
 } from "@heroicons/react/24/solid"
 
-// Patterns stored as minimal shapes (no padding)
 const PRESETS = {
   glider: " O \n  O\nOOO",
   lwss: " O  O\nO    \nO   O\nOOOO ",
@@ -31,28 +28,22 @@ const PRESETS = {
   gun: "                        O           \n                      O O           \n            OO      OO            OO\n           O   O    OO            OO\nOO        O     O   OO              \nOO        O   O OO    O O           \n          O     O       O           \n           O   O                    \n            OO                      ",
 }
 
-// Rotate a pattern by 0, 90, 180, or 270 degrees
 const rotatePattern = (pattern, degrees) => {
   if (degrees === 0) return pattern
 
   const rows = pattern.split('\n')
   const height = rows.length
   const width = Math.max(...rows.map(r => r.length))
-
-  // Normalize rows to same width
   const grid = rows.map(r => r.padEnd(width, ' ').split(''))
 
   let rotated
   if (degrees === 90) {
-    // 90 degrees clockwise: new[x][height-1-y] = old[y][x]
     rotated = Array(width).fill(null).map((_, x) =>
       Array(height).fill(null).map((_, y) => grid[height - 1 - y][x]).join('')
     )
   } else if (degrees === 180) {
-    // 180 degrees: reverse rows and reverse each row
     rotated = grid.map(row => row.reverse().join('')).reverse()
   } else if (degrees === 270) {
-    // 270 degrees clockwise: new[width-1-x][y] = old[y][x]
     rotated = Array(width).fill(null).map((_, x) =>
       Array(height).fill(null).map((_, y) => grid[y][width - 1 - x]).join('')
     )
@@ -74,14 +65,13 @@ export default function App() {
   const [generation, setGeneration] = useState("")
   const [showSettings, setShowSettings] = useState(true)
   const [error, setError] = useState(null)
-  const [cellColor, setCellColor] = useState('#10b981') // default emerald-500
-  const [cellCharacters, setCellCharacters] = useState(' O') // default space and O
-  const [cellCharInput, setCellCharInput] = useState(' O') // tracks input field value
+  const [cellColor, setCellColor] = useState('#10b981')
+  const [cellCharacters, setCellCharacters] = useState(' O')
+  const [cellCharInput, setCellCharInput] = useState(' O')
   const [cellCharError, setCellCharError] = useState(null)
   const [animationSpeed, setAnimationSpeed] = useState(500)
   const [generationCount, setGenerationCount] = useState(0)
 
-  // Validate that only ASCII characters are used (no Unicode/emoji)
   const validateCellCharacters = (value) => {
     for (let i = 0; i < value.length; i++) {
       if (value.charCodeAt(i) > 127) {
@@ -101,16 +91,13 @@ export default function App() {
     }
   }
 
-  // Insert a pattern into the current board at a random location
   const insertPattern = useCallback((pattern) => {
     if (!generation) return
 
-    // Parse current board dimensions
     const boardRows = generation.split('\n')
     const boardHeight = boardRows.length
     const boardWidth = boardRows[0]?.length || 0
 
-    // Find which rotations fit on the board
     const rotations = [0, 90, 180, 270]
     const validRotations = rotations.filter(deg => {
       const rotated = rotatePattern(pattern, deg)
@@ -121,7 +108,6 @@ export default function App() {
     })
 
     if (validRotations.length === 0) {
-      // Get original pattern dimensions to show helpful error
       const origRows = pattern.split('\n')
       const origHeight = origRows.length
       const origWidth = Math.max(...origRows.map(r => r.length))
@@ -129,26 +115,21 @@ export default function App() {
       return
     }
 
-    // Pick a random valid rotation
     const rotation = validRotations[Math.floor(Math.random() * validRotations.length)]
     const rotatedPattern = rotatePattern(pattern, rotation)
 
-    // Parse rotated pattern
     const patternRows = rotatedPattern.split('\n')
     const patternHeight = patternRows.length
     const patternWidth = Math.max(...patternRows.map(r => r.length))
 
-    // Pick random position where pattern fits
     const maxX = boardWidth - patternWidth
     const maxY = boardHeight - patternHeight
     const startX = Math.floor(Math.random() * (maxX + 1))
     const startY = Math.floor(Math.random() * (maxY + 1))
 
-    // Get a random cell character for the pattern
     const chars = cellCharacters.split('').filter(c => c !== ' ')
     const patternChar = chars.length > 0 ? chars[Math.floor(Math.random() * chars.length)] : 'O'
 
-    // Create new board with pattern inserted
     const newBoard = boardRows.map((row, y) => {
       const rowChars = row.split('')
       for (let x = 0; x < boardWidth; x++) {
@@ -202,10 +183,8 @@ export default function App() {
         return null
       }
 
-      // Get the account for simulation
       const account = await rpcServer.getAccount(simulatorAddress)
 
-      // Build the transaction to invoke the contract
       const tx = new TransactionBuilder(account, {
         fee: BASE_FEE,
         networkPassphrase: networkPassphrase,
@@ -220,10 +199,8 @@ export default function App() {
         )
         .build()
 
-      // Simulate the transaction (FREE - no fees charged)
       const sim = await rpcServer.simulateTransaction(tx)
 
-      // Check for simulation errors with user-friendly messages
       if (StellarRpc.Api.isSimulationError(sim)) {
         const errorMsg = sim.error || 'Unknown simulation error'
         if (errorMsg.includes('Budget') || errorMsg.includes('ExceededLimit')) {
@@ -235,7 +212,6 @@ export default function App() {
         throw new Error(`Contract error: ${errorMsg}`)
       }
 
-      // Extract the return value
       const result = sim.result?.retval
       if (result) {
         const nextBoard = scValToNative(result)
@@ -252,18 +228,12 @@ export default function App() {
     }
   }
 
-  // Use refs to access current values without triggering effect re-runs
+  // Refs to access current values in animation loop without triggering re-renders
   const generationRef = useRef(generation);
   const animationSpeedRef = useRef(animationSpeed);
 
-  // Keep refs in sync with state
-  useEffect(() => {
-    generationRef.current = generation;
-  }, [generation]);
-
-  useEffect(() => {
-    animationSpeedRef.current = animationSpeed;
-  }, [animationSpeed]);
+  useEffect(() => { generationRef.current = generation; }, [generation]);
+  useEffect(() => { animationSpeedRef.current = animationSpeed; }, [animationSpeed]);
 
   useEffect(() => {
     let timeoutId;
@@ -275,7 +245,6 @@ export default function App() {
       const currentGen = generationRef.current;
       if (!currentGen) return;
 
-      // Track how long the contract call and render takes
       const startTime = performance.now();
       const nextGen = await renderNewGeneration(currentGen);
       const elapsed = performance.now() - startTime;
@@ -287,8 +256,6 @@ export default function App() {
       } else if (nextGen) {
         setGeneration(nextGen);
         generationRef.current = nextGen;
-        // Calculate remaining delay to maintain consistent animation pace
-        // If contract call took longer than animation speed, run immediately (0 delay)
         const remainingDelay = Math.max(0, animationSpeedRef.current - elapsed);
         timeoutId = setTimeout(runGeneration, remainingDelay);
       }
@@ -298,14 +265,13 @@ export default function App() {
       runGeneration();
     }
 
-    // Cleanup function
     return () => {
       isMounted = false;
       if (timeoutId) {
         clearTimeout(timeoutId);
       }
     };
-  }, [isRunning]); // Only depend on isRunning - use refs for other values
+  }, [isRunning]);
 
   useEffect(() => {
     setGeneration(generateRandomBoard())

@@ -2,6 +2,8 @@
 
 A serverless implementation of Conway's Game of Life using Stellar's Soroban smart contracts. The game logic runs entirely on the blockchain, with the frontend making free read-only calls via transaction simulation.
 
+**[Live Demo](https://wyhaines.github.io/stellar-game-of-life/)** | **[Contract on Stellar Expert](https://stellar.expert/explorer/testnet/contract/CCPQTZA3KUWEBPKD3TF4TWBZPJTC4M2PVVMDUQ22PF7QQ57AZQUJZGBL)**
+
 **This project demonstrates that building web applications on blockchain involves basic patterns that front-end developers may already be familiar with.**
 
 This project uses a toy -- an implementation of Conway's cellular automata simulation -- to show how a standard React frontend can interact with a Soroban smart contract using patterns that will feel familiar to any web developer.
@@ -110,7 +112,7 @@ const tx = new TransactionBuilder(account, {
 - `TransactionBuilder` creates a transaction envelope
 - `Operation.invokeContractFunction` specifies which contract function to call
 - `nativeToScVal` converts our JavaScript string (`board`) to Soroban's string type
-- The contract ID is a base32-encoded identifier like `CDZT3TUOQ7ECWWSAX4MTXJZOSTBO4HV4RLVTASJNCCVIC2JANUQ7K6CF`
+- The contract ID is a base32-encoded identifier (e.g., `CCPQTZA3KUWEBPKD3TF4TWBZPJTC4M2PVVMDUQ22PF7QQ57AZQUJZGBL`)
 
 #### 4. Simulate the Transaction
 
@@ -222,11 +224,9 @@ pub struct GameOfLife;
 
 #[contractimpl]
 impl GameOfLife {
-    /// Calculate next generation of Conway's Game of Life
-    /// Board format: rows separated by newlines, space = dead, any other char = alive
-    ///
-    /// Multi-colony support: newly born cells inherit the dominant cell type
-    /// from their neighbors. Ties are resolved randomly.
+    /// Computes the next generation of Conway's Game of Life.
+    /// Board format: rows separated by newlines, space = dead, any other char = alive.
+    /// Newly born cells inherit the dominant neighbor type; ties are broken randomly.
     pub fn next_generation(env: Env, board: String) -> String {
         // ... implementation
     }
@@ -381,6 +381,13 @@ Note: Mainnet deployment costs a small fee, but all subsequent simulation calls 
 
 ### Frontend to GitHub Pages
 
+The repository includes a GitHub Actions workflow that automatically builds and deploys to GitHub Pages on every push to `main`. The live demo uses the testnet contract:
+
+| Network | Contract ID |
+|---------|-------------|
+| Testnet | `CCPQTZA3KUWEBPKD3TF4TWBZPJTC4M2PVVMDUQ22PF7QQ57AZQUJZGBL` |
+
+To deploy manually:
 ```bash
 npm run build
 # Deploy the dist/ folder to GitHub Pages

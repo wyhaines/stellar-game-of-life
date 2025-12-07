@@ -82,7 +82,7 @@ const rpcUrl = "https://soroban-testnet.stellar.org"
 const rpcServer = new StellarRpc.Server(rpcUrl, { allowHttp: true })
 ```
 
-This creates a client that communicates with a Stellar RPC server. For local development, you'd point this to `http://localhost:8000/soroban/rpc`.
+This creates a client that communicates with a Stellar RPC server. For local development, you can use the [Stellar Quickstart](https://github.com/stellar/quickstart) docker image to easily run a local environment. Using that, you'd point this to `http://localhost:8000/soroban/rpc`.
 
 #### 3. Build the Transaction
 

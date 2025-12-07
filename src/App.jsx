@@ -71,6 +71,7 @@ export default function App() {
   const [cellCharError, setCellCharError] = useState(null)
   const [animationSpeed, setAnimationSpeed] = useState(500)
   const [generationCount, setGenerationCount] = useState(0)
+  const [selectedBrush, setSelectedBrush] = useState('O')
 
   const validateCellCharacters = (value) => {
     for (let i = 0; i < value.length; i++) {
@@ -88,6 +89,10 @@ export default function App() {
     setCellCharError(error)
     if (!error) {
       setCellCharacters(value)
+      const chars = value.split('').filter(c => c !== ' ')
+      if (chars.length > 0 && !chars.includes(selectedBrush)) {
+        setSelectedBrush(chars[0])
+      }
     }
   }
 
@@ -325,8 +330,7 @@ export default function App() {
     const currentCell = rowChars[col]
 
     if (currentCell === ' ') {
-      const chars = cellCharacters.split('').filter(c => c !== ' ')
-      rowChars[col] = chars.length > 0 ? chars[0] : 'O'
+      rowChars[col] = selectedBrush || 'O'
     } else {
       rowChars[col] = ' '
     }
@@ -471,6 +475,29 @@ export default function App() {
               ASCII characters only (A-Z, 0-9, symbols). Space = dead cell.
             </p>
           )}
+        </div>
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium text-gray-300 mb-2">
+          Drawing Brush
+        </label>
+        <p className="text-xs text-gray-500 mb-2">Click cells on the board to draw. Select which character to place:</p>
+        <div className="flex flex-wrap gap-2">
+          {cellCharacters.split('').filter(c => c !== ' ').map((char, idx) => (
+            <button
+              key={idx}
+              onClick={() => setSelectedBrush(char)}
+              className={`w-10 h-10 rounded font-mono text-lg transition-all ${
+                selectedBrush === char
+                  ? 'bg-emerald-600 text-white ring-2 ring-emerald-400'
+                  : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+              }`}
+              style={selectedBrush === char ? { color: cellColor } : {}}
+            >
+              {char}
+            </button>
+          ))}
         </div>
       </div>
 

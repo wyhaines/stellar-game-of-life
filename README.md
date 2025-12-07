@@ -42,11 +42,10 @@ This section walks through exactly how the web frontend communicates with the So
 
 ```
 ┌─────────────────┐         ┌─────────────────┐         ┌─────────────────┐
-│                 │         │                 │         │                 │
-│  React Frontend │ ──────► │  Stellar RPC    │ ──────► │ Soroban Contract│
-│                 │         │  Server         │         │ (WebAssembly)   │
-│                 │ ◄────── │                 │ ◄────── │                 │
+  React Frontend   ──────►    Stellar RPC      ──────►   Soroban Contract
+                   ◄──────     Server          ◄──────    (WebAssembly)   
 └─────────────────┘         └─────────────────┘         └─────────────────┘
+                 
      JavaScript                  JSON-RPC                    Rust/WASM
 ```
 

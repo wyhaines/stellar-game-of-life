@@ -209,7 +209,7 @@ if (StellarRpc.Api.isSimulationError(sim)) {
 }
 ```
 
-This provides user-friendly feedback when the computation exceeds available resources.
+This way users get a clear error instead of something cryptic (or no feedback at all). This is necessary because the nodes executing the contract have limits regarding the resources that can be used in a single call. Exceeding that limit will result in an error that should be handled.
 
 ---
 
@@ -376,7 +376,7 @@ soroban contract deploy \
   --network mainnet
 ```
 
-Note: Mainnet deployment costs a small fee, but all subsequent simulation calls are free.
+Mainnet deployment has a small fee; simulation calls after that are free.
 
 ### Frontend to GitHub Pages
 

@@ -8,12 +8,12 @@ A serverless implementation of Conway's Game of Life using Stellar's Soroban sma
 
 This project uses a toy -- an implementation of Conway's cellular automata simulation -- to show how a standard React frontend can interact with a Soroban smart contract using patterns that will feel familiar to any web developer.
 
-The key takeway from this example is this: **calling a smart contract is just an API call**. You send data, you get data back. The fact that the "backend" is a decentralized blockchain running WebAssembly doesn't fundamentally change how you build the frontend.
+The Game of Life logic runs on-chain, but from the frontend's perspective, it's just: send data, get data back.
 
 ## Features
 
 - **Serverless**: No backend servers required - this will run from any static web host
-- **Free Execution**: Uses Soroban's `simulateTransaction` for free read-only contract calls - to be fair, the core calculations would be easy to build into the front end itself, but where would the fun be in that?
+- **Free Execution**: Uses Soroban's `simulateTransaction` for free read-only contract calls (yes, the Game of Life math could run client-side, but that defeats the purpose of a demo)
 - **Multi-Colony Support**: Multiple cell types compete for territory, with new cells inheriting the dominant neighbor type
 - **Configurable**: Adjust board size, animation speed, cell colors, and more
 - **Classic Patterns**: Includes preset patterns (glider, blinker, block, glider gun, and more)
@@ -50,7 +50,7 @@ This section walks through exactly how the web frontend communicates with the So
      JavaScript                  JSON-RPC                    Rust/WASM
 ```
 
-The frontend builds a transaction, sends it to an RPC server for simulation, and receives the result. No wallet signatures are required for read-only operations, and there are no gas fees, either. It is just a function call.
+The frontend builds a transaction, sends it to an RPC server for simulation, and gets the result back. No wallet needed for read-only operations, no gas fees—just a function call.
 
 ### Step-by-Step: Making a Contract Call
 
@@ -178,7 +178,7 @@ async function getNextGeneration(currentBoard) {
 }
 ```
 
-**That's it.** Five steps to call a smart contract from JavaScript. The pattern is:
+**Pretty straightforward** Five steps to call a smart contract from JavaScript. The pattern is:
 1. Build a transaction
 2. Simulate it
 3. Extract the result
@@ -192,7 +192,7 @@ Stellar/Soroban distinguishes between:
 | `simulateTransaction` | No | No | No |
 | `sendTransaction` | Yes | Yes | Yes |
 
-For this Game of Life implementation, we only need to *compute* the next generation - we don't need to *store* it on the blockchain. Simulation gives us the computation for free.
+Since we just need the computation (not persistent storage), simulation is perfect (and free).
 
 If you were building an application that needed to persist state (like a game with high scores, or a DeFi application), you'd use `sendTransaction` instead. That requires signing the transaction with a wallet and paying a small fee, but from the developer's POV, it is a very similar operation.
 
@@ -393,21 +393,9 @@ npm run build
 # Deploy the dist/ folder to GitHub Pages
 ```
 
----
+## tl;Dr
 
-## Key Takeaways
-
-1. **Calling a smart contract is just an API call.** Build a transaction, simulate it, get the result.
-
-2. **Read-only operations are free.** `simulateTransaction` executes contract logic without submitting to the blockchain or paying fees.
-
-3. **The Stellar SDK handles type conversion.** `nativeToScVal` and `scValToNative` bridge JavaScript and Soroban types seamlessly.
-
-4. **Error handling works like any API.** Check for errors in the response and handle them appropriately.
-
-5. **You don't need a wallet for read-only calls.** Simulation doesn't require transaction signing.
-
-The blockchain is just your backend. Build your frontend like you always have.
+Smart contract calls are just API calls. Read-only calls are free. The SDK handles type conversion. You don't need a wallet for reads. That's basically it.
 
 ---
 

@@ -1,6 +1,6 @@
 # Conway's Game of Life - Stellar/Soroban
 
-A serverless implementation of Conway's Game of Life using Stellar's Soroban smart contracts. The game logic runs entirely on the blockchain, with the frontend making free read-only calls via transaction simulation.
+A serverless implementation of [Conway's Game of Life](https://en.wikipedia.org/wiki/Conway%27s_Game_of_Life) using Stellar's Soroban smart contracts. The game logic runs entirely on the blockchain, with the frontend making free read-only calls via transaction simulation.
 
 **[Live Demo](https://wyhaines.github.io/stellar-game-of-life/)** | **[Contract on Stellar Expert](https://stellar.expert/explorer/testnet/contract/CCPQTZA3KUWEBPKD3TF4TWBZPJTC4M2PVVMDUQ22PF7QQ57AZQUJZGBL)**
 

@@ -317,6 +317,24 @@ export default function App() {
     }
   }
 
+  const toggleCell = (row, col) => {
+    if (!generation || isRunning) return
+
+    const rows = generation.split('\n')
+    const rowChars = rows[row].split('')
+    const currentCell = rowChars[col]
+
+    if (currentCell === ' ') {
+      const chars = cellCharacters.split('').filter(c => c !== ' ')
+      rowChars[col] = chars.length > 0 ? chars[0] : 'O'
+    } else {
+      rowChars[col] = ' '
+    }
+
+    rows[row] = rowChars.join('')
+    setGeneration(rows.join('\n'))
+  }
+
   const renderBoard = (board) => {
     if (!board) return null;
     const rows = board.split("\n");
@@ -340,6 +358,8 @@ export default function App() {
               <div
                 key={`${i}-${j}`}
                 className={`cell ${cell !== " " ? "cell-alive" : "cell-dead"}`}
+                onClick={() => toggleCell(i, j)}
+                style={{ cursor: isRunning ? 'default' : 'pointer' }}
               >
                 {cell !== " " ? cell : " "}
               </div>

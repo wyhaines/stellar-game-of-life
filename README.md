@@ -2,7 +2,7 @@
 
 A serverless implementation of [Conway's Game of Life](https://en.wikipedia.org/wiki/Conway%27s_Game_of_Life) using Stellar's Soroban smart contracts. The game logic runs entirely on the blockchain, with the frontend making free read-only calls via transaction simulation.
 
-**[Live Demo](https://wyhaines.github.io/stellar-game-of-life/)** | **[Contract on Stellar Expert](https://stellar.expert/explorer/testnet/contract/CCPQTZA3KUWEBPKD3TF4TWBZPJTC4M2PVVMDUQ22PF7QQ57AZQUJZGBL)**
+**[Live Demo](https://wyhaines.github.io/stellar-game-of-life/)** | **[Contract on Stellar Expert](https://stellar.expert/explorer/testnet/contract/CC6L3R33M6F2N5A7TKWJQYFHVKMW6TNPKFI5LUCUVUDB4PKPYTCCFAN3)**
 
 **This project demonstrates that building web applications on blockchain involves basic patterns that front-end developers may already be familiar with.**
 
@@ -111,7 +111,7 @@ const tx = new TransactionBuilder(account, {
 - `TransactionBuilder` creates a transaction envelope
 - `Operation.invokeContractFunction` specifies which contract function to call
 - `nativeToScVal` converts our JavaScript string (`board`) to Soroban's string type
-- The contract ID is a base32-encoded identifier (e.g., `CCPQTZA3KUWEBPKD3TF4TWBZPJTC4M2PVVMDUQ22PF7QQ57AZQUJZGBL`)
+- The contract ID is a base32-encoded identifier (e.g., `CC6L3R33M6F2N5A7TKWJQYFHVKMW6TNPKFI5LUCUVUDB4PKPYTCCFAN3`)
 
 #### 4. Simulate the Transaction
 
@@ -384,7 +384,7 @@ The repository includes a GitHub Actions workflow that automatically builds and 
 
 | Network | Contract ID |
 |---------|-------------|
-| Testnet | `CCPQTZA3KUWEBPKD3TF4TWBZPJTC4M2PVVMDUQ22PF7QQ57AZQUJZGBL` |
+| Testnet | `CC6L3R33M6F2N5A7TKWJQYFHVKMW6TNPKFI5LUCUVUDB4PKPYTCCFAN3` |
 
 To deploy manually:
 ```bash

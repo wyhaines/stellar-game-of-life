@@ -55,8 +55,8 @@ const rotatePattern = (pattern, degrees) => {
 export default function App() {
   const networkPassphrase = import.meta.env.VITE_NETWORK_PASSPHRASE || Networks.TESTNET
   const rpcUrl = import.meta.env.VITE_RPC_URL || "https://soroban-testnet.stellar.org"
-  const contractId = import.meta.env.VITE_CONTRACT_ID || ""
-  const simulatorAddress = import.meta.env.VITE_SIMULATOR_ADDRESS || ""
+  const contractId = import.meta.env.VITE_CONTRACT_ID || "CC6L3R33M6F2N5A7TKWJQYFHVKMW6TNPKFI5LUCUVUDB4PKPYTCCFAN3"
+  const simulatorAddress = import.meta.env.VITE_SIMULATOR_ADDRESS || "GBJ57U3WY2DB5THVFY7SKZ3WKO2MDEWFFJ4CP5QF2RUARWGQYTKRPWOS"
 
   const [rpcServer] = useState(() => new StellarRpc.Server(rpcUrl, { allowHttp: true }))
   const [dimensions, setDimensions] = useState({ width: 20, height: 20 })

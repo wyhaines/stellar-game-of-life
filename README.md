@@ -1,22 +1,12 @@
-# Conway's Game of Life - Stellar/Soroban
+# Conway's Game of Life on Soroban
 
-A serverless implementation of [Conway's Game of Life](https://en.wikipedia.org/wiki/Conway%27s_Game_of_Life) using Stellar's Soroban smart contracts. The game logic runs entirely on the blockchain, with the frontend making free read-only calls via transaction simulation.
+An implementation of [Conway's Game of Life](https://en.wikipedia.org/wiki/Conway%27s_Game_of_Life) running on Stellar's Soroban smart contracts. The game logic executes on-chain, while the React frontend makes free read-only calls through transaction simulation.
 
 **[Live Demo](https://wyhaines.github.io/stellar-game-of-life/)** | **[Contract on Stellar Expert](https://stellar.expert/explorer/testnet/contract/CC6L3R33M6F2N5A7TKWJQYFHVKMW6TNPKFI5LUCUVUDB4PKPYTCCFAN3)**
 
-**This project demonstrates that building web applications on blockchain involves basic patterns that front-end developers may already be familiar with.**
+This project shows how a React frontend can interact with a Soroban smart contract using patterns familiar to any web developer. The Game of Life math runs on-chain, but from the frontend's perspective, it works like any other API: send data, get data back.
 
-This project uses a toy -- an implementation of Conway's cellular automata simulation -- to show how a standard React frontend can interact with a Soroban smart contract using patterns that will feel familiar to any web developer.
-
-The Game of Life logic runs on-chain, but from the frontend's perspective, it's just: send data, get data back.
-
-## Features
-
-- **Serverless**: No backend servers required - this will run from any static web host
-- **Free Execution**: Uses Soroban's `simulateTransaction` for free read-only contract calls (yes, the Game of Life math could run client-side, but that defeats the purpose of a demo)
-- **Multi-Colony Support**: Multiple cell types compete for territory, with new cells inheriting the dominant neighbor type
-- **Configurable**: Adjust board size, animation speed, cell colors, and more
-- **Classic Patterns**: Includes preset patterns (glider, blinker, block, glider gun, and more)
+The frontend requires no backend servers and runs from any static web host. It uses Soroban's `simulateTransaction` for free read-only contract calls. The implementation supports multiple cell types that compete for territory, with configurable board size, animation speed, and colors. Several classic patterns are included: glider, blinker, block, glider gun, and others.
 
 ## Project Structure
 
@@ -34,28 +24,20 @@ stellar-game-of-life/
 └── ...
 ```
 
----
+## How the Frontend Calls the Smart Contract
 
-## How the Frontend Calls a Smart Contract
-
-This section walks through exactly how the web frontend communicates with the Soroban smart contract that has been deployed out to a Stellar network (Soroban Quickstart, testnet, or mainnet).
+The frontend builds a transaction, sends it to an RPC server for simulation, and receives the result. Read-only operations require no wallet and incur no fees.
 
 ```
 ┌─────────────────┐         ┌─────────────────┐         ┌─────────────────┐
   React Frontend   ──────►    Stellar RPC      ──────►   Soroban Contract
-                   ◄──────     Server          ◄──────    (WebAssembly)   
+                   ◄──────     Server          ◄──────    (WebAssembly)
 └─────────────────┘         └─────────────────┘         └─────────────────┘
-                 
+
      JavaScript                  JSON-RPC                    Rust/WASM
 ```
 
-The frontend builds a transaction, sends it to an RPC server for simulation, and gets the result back. No wallet needed for read-only operations, no gas fees—just a function call.
-
-### Step-by-Step: Making a Contract Call
-
-Here's the actual code from `App.jsx` that calls the smart contract, with detailed explanations:
-
-#### 1. Import the Stellar SDK
+### Importing the SDK
 
 ```javascript
 import {
@@ -68,29 +50,22 @@ import {
 } from "@stellar/stellar-sdk"
 ```
 
-The `@stellar/stellar-sdk` package provides everything needed to interact with Stellar and Soroban. Imports:
-- `StellarRpc` - Client for communicating with the RPC server
-- `nativeToScVal` - Converts JavaScript values to Soroban's type system
-- `scValToNative` - Converts Soroban values back to JavaScript
-- `TransactionBuilder` - Constructs the transaction envelope
-- `Operation` - Defines what the transaction does (invoke a contract function)
+The `@stellar/stellar-sdk` package provides everything needed to interact with Stellar and Soroban. `StellarRpc` handles communication with the RPC server. `nativeToScVal` and `scValToNative` convert between JavaScript types and Soroban's type system. `TransactionBuilder` constructs the transaction envelope, and `Operation` defines the contract invocation.
 
-#### 2. Initialize the RPC Client
+### Initializing the RPC Client
 
 ```javascript
 const rpcUrl = "https://soroban-testnet.stellar.org"
 const rpcServer = new StellarRpc.Server(rpcUrl, { allowHttp: true })
 ```
 
-This creates a client that communicates with a Stellar RPC server. For local development, you can use the [Stellar Quickstart](https://github.com/stellar/quickstart) docker image to easily run a local environment. Using that, you'd point this to `http://localhost:8000/soroban/rpc`.
+This creates a client that communicates with a Stellar RPC server. For local development, the [Stellar Quickstart](https://github.com/stellar/quickstart) Docker image provides a local network at `http://localhost:8000/soroban/rpc`.
 
-#### 3. Build the Transaction
+### Building the Transaction
 
 ```javascript
-// Get an account to use as the transaction source
 const account = await rpcServer.getAccount(simulatorAddress)
 
-// Build a transaction that invokes the contract
 const tx = new TransactionBuilder(account, {
   fee: BASE_FEE,
   networkPassphrase: networkPassphrase,
@@ -98,58 +73,43 @@ const tx = new TransactionBuilder(account, {
   .setTimeout(30)
   .addOperation(
     Operation.invokeContractFunction({
-      function: "next_generation",      // The contract function to call
-      contract: contractId,              // The deployed contract's ID
-      args: [nativeToScVal(board, { type: "string" })],  // Function arguments
+      function: "next_generation",
+      contract: contractId,
+      args: [nativeToScVal(board, { type: "string" })],
     })
   )
   .build()
 ```
 
-**What's happening here:**
-- We fetch account details (needed for transaction structure, even for simulations)
-- `TransactionBuilder` creates a transaction envelope
-- `Operation.invokeContractFunction` specifies which contract function to call
-- `nativeToScVal` converts our JavaScript string (`board`) to Soroban's string type
-- The contract ID is a base32-encoded identifier (e.g., `CC6L3R33M6F2N5A7TKWJQYFHVKMW6TNPKFI5LUCUVUDB4PKPYTCCFAN3`)
+The transaction requires account details for its structure, even for simulations. `Operation.invokeContractFunction` specifies the contract function to call and its arguments. `nativeToScVal` converts the JavaScript board string to Soroban's string type. The contract ID is a base32-encoded identifier like `CC6L3R33M6F2N5A7TKWJQYFHVKMW6TNPKFI5LUCUVUDB4PKPYTCCFAN3`.
 
-#### 4. Simulate the Transaction
+### Simulating the Transaction
 
 ```javascript
 const sim = await rpcServer.simulateTransaction(tx)
 ```
 
-The `simulateTransaction` method:
-- Sends the transaction to the RPC server
-- The server executes the contract in a sandbox
-- Returns the result without actually submitting to the blockchain
-- **Costs nothing** - because `simulateTransaction` is read only, there are no fees
+The `simulateTransaction` method sends the transaction to the RPC server, which executes the contract in a sandbox and returns the result without submitting anything to the blockchain. This costs nothing because simulation is read-only.
 
-The contract runs, computes the next generation of the Game of Life, and returns the result.
-
-#### 5. Extract and Convert the Result
+### Extracting the Result
 
 ```javascript
-// Check for errors
 if (StellarRpc.Api.isSimulationError(sim)) {
   throw new Error(sim.error)
 }
 
-// Extract the return value and convert to JavaScript
 const result = sim.result?.retval
-const nextBoard = scValToNative(result)  // Now it's a regular JavaScript string
+const nextBoard = scValToNative(result)
 ```
 
-The response contains the contract's return value in Soroban's type system. `scValToNative` converts it back to a JavaScript string that we can render in the UI.
+The response contains the contract's return value in Soroban's type system. `scValToNative` converts it back to a JavaScript string for rendering in the UI.
 
-### The Complete Flow
+### Complete Example
 
 ```javascript
 async function getNextGeneration(currentBoard) {
-  // 1. Get account for transaction structure
   const account = await rpcServer.getAccount(simulatorAddress)
 
-  // 2. Build transaction with contract call
   const tx = new TransactionBuilder(account, {
     fee: BASE_FEE,
     networkPassphrase: networkPassphrase,
@@ -164,40 +124,28 @@ async function getNextGeneration(currentBoard) {
     )
     .build()
 
-  // 3. Simulate (execute without submitting)
   const sim = await rpcServer.simulateTransaction(tx)
 
-  // 4. Handle errors
   if (StellarRpc.Api.isSimulationError(sim)) {
     throw new Error(sim.error)
   }
 
-  // 5. Convert result to JavaScript and return
   return scValToNative(sim.result?.retval)
 }
 ```
 
-**Pretty straightforward** Five steps to call a smart contract from JavaScript. The pattern is:
-1. Build a transaction
-2. Simulate it
-3. Extract the result
-
-### Why `simulateTransaction` Instead of Submitting?
-
-Stellar/Soroban distinguishes between:
+### Simulation vs. Submission
 
 | Operation | Submits to Blockchain | Costs Fees | Changes State |
 |-----------|----------------------|------------|---------------|
 | `simulateTransaction` | No | No | No |
 | `sendTransaction` | Yes | Yes | Yes |
 
-Since we just need the computation (not persistent storage), simulation is perfect (and free).
-
-If you were building an application that needed to persist state (like a game with high scores, or a DeFi application), you'd use `sendTransaction` instead. That requires signing the transaction with a wallet and paying a small fee, but from the developer's POV, it is a very similar operation.
+Since this application only needs computation without persistent storage, simulation works well. Applications that need to persist state (high scores, DeFi operations) would use `sendTransaction` instead. That requires signing with a wallet and paying a small fee, but the code structure is similar.
 
 ### Error Handling
 
-The frontend detects when the board exceeds the smart contract's resource limits:
+The frontend detects when the board exceeds the contract's resource limits:
 
 ```javascript
 if (StellarRpc.Api.isSimulationError(sim)) {
@@ -209,13 +157,11 @@ if (StellarRpc.Api.isSimulationError(sim)) {
 }
 ```
 
-This way users get a clear error instead of something cryptic (or no feedback at all). This is necessary because the nodes executing the contract have limits regarding the resources that can be used in a single call. Exceeding that limit will result in an error that should be handled.
-
----
+Stellar nodes have resource limits for contract execution. Large boards may exceed these limits, and the frontend translates the resulting error into something readable.
 
 ## The Smart Contract
 
-The Soroban contract is written in Rust and compiled to WebAssembly. Here's the core interface:
+The Soroban contract is written in Rust and compiled to WebAssembly:
 
 ```rust
 #[contract]
@@ -232,52 +178,42 @@ impl GameOfLife {
 }
 ```
 
-The contract:
-- Receives a board state as a string (rows separated by newlines)
-- Applies Conway's Game of Life rules
-- Returns the next generation as a string
-- Supports multiple cell types (characters) for "competing colonies"
-- Uses Soroban's PRNG for random tie-breaking
-
----
+The contract receives a board state as a newline-separated string, applies the Game of Life rules, and returns the next generation. It supports multiple cell types (any non-space character), with newly born cells inheriting the dominant neighbor type. Ties are broken using Soroban's PRNG.
 
 ## Prerequisites
 
-### For Frontend Development
+Frontend development requires Node.js 18+ and npm or yarn.
 
-- Node.js 18+
-- npm or yarn
+Smart contract development requires Rust and the Stellar CLI. Install Rust with:
 
-### For Smart Contract Development
+```bash
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+source ~/.cargo/env
+rustup target add wasm32-unknown-unknown
+```
 
-1. Install Rust:
-   ```bash
-   curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
-   source ~/.cargo/env
-   rustup target add wasm32-unknown-unknown
-   ```
+Install the Stellar CLI:
 
-2. Install Soroban CLI:
-   ```bash
-   cargo install --locked soroban-cli
-   ```
+```bash
+cargo install --locked stellar-cli
+```
 
-3. Set up testnet identity:
-   ```bash
-   soroban keys generate --global deployer --network testnet
-   soroban keys fund deployer --network testnet
-   ```
+Set up a testnet identity:
+
+```bash
+stellar keys generate --global deployer --network testnet
+stellar keys fund deployer --network testnet
+```
 
 ## Quick Start
 
-### 1. Build and Deploy the Smart Contract
+### Build and Deploy the Contract
 
 ```bash
 cd contracts/game-of-life
-soroban contract build
+stellar contract build
 
-# Deploy to testnet
-soroban contract deploy \
+stellar contract deploy \
   --wasm target/wasm32-unknown-unknown/release/game_of_life.wasm \
   --source deployer \
   --network testnet
@@ -285,7 +221,7 @@ soroban contract deploy \
 
 Save the returned contract ID.
 
-### 2. Configure the Frontend
+### Configure the Frontend
 
 ```bash
 cp .env.example .env
@@ -299,11 +235,12 @@ VITE_SIMULATOR_ADDRESS=<your-stellar-address>
 ```
 
 Get your address with:
+
 ```bash
-soroban keys address deployer
+stellar keys address deployer
 ```
 
-### 3. Run the Frontend
+### Run the Frontend
 
 ```bash
 npm install
@@ -314,34 +251,35 @@ Open http://localhost:5173
 
 ## Local Development with Stellar Quickstart
 
-For local development without using testnet, you can run a local Stellar network:
+To develop locally without using testnet, run a local Stellar network with Docker:
 
 ```bash
-# Start local Stellar network with Docker
 docker run --rm -it \
   -p 8000:8000 \
   --name stellar \
   stellar/quickstart:latest \
   --standalone \
   --enable-soroban-rpc
+```
 
-# Configure CLI for local network
-soroban network add standalone \
+Configure the CLI for the local network:
+
+```bash
+stellar network add standalone \
   --rpc-url http://localhost:8000/soroban/rpc \
   --network-passphrase "Standalone Network ; February 2017"
 
-# Create and fund a local identity
-soroban keys generate --global local-deployer --network standalone
-soroban keys fund local-deployer --network standalone
+stellar keys generate --global local-deployer --network standalone
+stellar keys fund local-deployer --network standalone
 
-# Deploy contract locally
-soroban contract deploy \
+stellar contract deploy \
   --wasm target/wasm32-unknown-unknown/release/game_of_life.wasm \
   --source local-deployer \
   --network standalone
 ```
 
 Update `.env` for local development:
+
 ```
 VITE_NETWORK_PASSPHRASE=Standalone Network ; February 2017
 VITE_RPC_URL=http://localhost:8000/soroban/rpc
@@ -351,14 +289,14 @@ VITE_SIMULATOR_ADDRESS=<your-local-address>
 
 ## Testing
 
-### Rust Contract Tests
+Run Rust contract tests:
 
 ```bash
 cd contracts/game-of-life
 cargo test
 ```
 
-### Frontend
+Build and preview the frontend:
 
 ```bash
 npm run build
@@ -370,33 +308,24 @@ npm run preview
 ### Contract to Mainnet
 
 ```bash
-soroban contract deploy \
+stellar contract deploy \
   --wasm target/wasm32-unknown-unknown/release/game_of_life.wasm \
   --source deployer \
   --network mainnet
 ```
 
-Mainnet deployment has a small fee; simulation calls after that are free.
+Mainnet deployment has a small fee; simulation calls are free afterward.
 
 ### Frontend to GitHub Pages
 
-The repository includes a GitHub Actions workflow that automatically builds and deploys to GitHub Pages on every push to `main`. The live demo uses the testnet contract:
-
-| Network | Contract ID |
-|---------|-------------|
-| Testnet | `CC6L3R33M6F2N5A7TKWJQYFHVKMW6TNPKFI5LUCUVUDB4PKPYTCCFAN3` |
+The repository includes a GitHub Actions workflow that builds and deploys to GitHub Pages on every push to `main`. The live demo uses the testnet contract `CC6L3R33M6F2N5A7TKWJQYFHVKMW6TNPKFI5LUCUVUDB4PKPYTCCFAN3`.
 
 To deploy manually:
+
 ```bash
 npm run build
 # Deploy the dist/ folder to GitHub Pages
 ```
-
-## tl;Dr
-
-Smart contract calls are just API calls. Read-only calls are free. The SDK handles type conversion. You don't need a wallet for reads. That's basically it.
-
----
 
 ## License
 

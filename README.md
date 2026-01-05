@@ -2,7 +2,7 @@
 
 An implementation of [Conway's Game of Life](https://en.wikipedia.org/wiki/Conway%27s_Game_of_Life) running on Stellar's Soroban smart contracts. The game logic executes on-chain, while the React frontend makes free read-only calls through transaction simulation.
 
-**[Live Demo](https://wyhaines.github.io/stellar-game-of-life/)** | **[Contract on Stellar Expert](https://stellar.expert/explorer/testnet/contract/CC6L3R33M6F2N5A7TKWJQYFHVKMW6TNPKFI5LUCUVUDB4PKPYTCCFAN3)**
+**[Live Demo](https://wyhaines.github.io/stellar-game-of-life/)** | **[Contract on Stellar Expert](https://stellar.expert/explorer/testnet/contract/CAU2GHALHVXTLBQ7CXN4M65V5XLTSAKPAA25IKPHPTFEBBOBG6HIOERX)**
 
 This project shows how a React frontend can interact with a Soroban smart contract using patterns familiar to any web developer. The Game of Life math runs on-chain, but from the frontend's perspective, it works like any other API: send data, get data back.
 
@@ -81,7 +81,7 @@ const tx = new TransactionBuilder(account, {
   .build()
 ```
 
-The transaction requires account details for its structure, even for simulations. `Operation.invokeContractFunction` specifies the contract function to call and its arguments. `nativeToScVal` converts the JavaScript board string to Soroban's string type. The contract ID is a base32-encoded identifier like `CC6L3R33M6F2N5A7TKWJQYFHVKMW6TNPKFI5LUCUVUDB4PKPYTCCFAN3`.
+The transaction requires account details for its structure, even for simulations. `Operation.invokeContractFunction` specifies the contract function to call and its arguments. `nativeToScVal` converts the JavaScript board string to Soroban's string type. The contract ID is a base32-encoded identifier like `CAU2GHALHVXTLBQ7CXN4M65V5XLTSAKPAA25IKPHPTFEBBOBG6HIOERX`.
 
 ### Simulating the Transaction
 
@@ -211,13 +211,17 @@ stellar keys fund deployer --network testnet
 
 ```bash
 cd contracts/game-of-life
-stellar contract build
+stellar contract build \
+  --meta source_repo=github:wyhaines/stellar-game-of-life \
+  --meta home_domain=wyhaines.github.io
 
 stellar contract deploy \
   --wasm target/wasm32-unknown-unknown/release/game_of_life.wasm \
   --source deployer \
   --network testnet
 ```
+
+The `--meta` flags embed [SEP-0055](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0055.md) metadata into the WASM binary. This enables contract verification by linking the deployed contract to its source repository.
 
 Save the returned contract ID.
 
@@ -318,7 +322,7 @@ Mainnet deployment has a small fee; simulation calls are free afterward.
 
 ### Frontend to GitHub Pages
 
-The repository includes a GitHub Actions workflow that builds and deploys to GitHub Pages on every push to `main`. The live demo uses the testnet contract `CC6L3R33M6F2N5A7TKWJQYFHVKMW6TNPKFI5LUCUVUDB4PKPYTCCFAN3`.
+The repository includes a GitHub Actions workflow that builds and deploys to GitHub Pages on every push to `main`. The live demo uses the testnet contract `CAU2GHALHVXTLBQ7CXN4M65V5XLTSAKPAA25IKPHPTFEBBOBG6HIOERX`.
 
 To deploy manually:
 
